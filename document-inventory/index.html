@@ -1,0 +1,60 @@
+<!doctype html>
+<html lang="es">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="description" content="Genera un inventario local de archivos y carpetas mediante metadatos.">
+  <meta name="theme-color" content="#172b4d">
+  <title>Inventario documental</title>
+  <link rel="stylesheet" href="./styles.css">
+  <script defer src="./core/inventory-core.js"></script>
+  <script defer src="./app.js"></script>
+</head>
+<body>
+  <main class="shell">
+    <header class="topbar">
+      <div class="brand-mark" aria-hidden="true">ID</div>
+      <div><p class="eyebrow">HERRAMIENTA LOCAL</p><h1>Inventario documental</h1></div>
+      <span class="privacy-pill">Sin subir archivos</span>
+    </header>
+    <section class="intro">
+      <h2>Conoce la estructura de tu documentación</h2>
+      <p>Selecciona una carpeta. La herramienta recorrerá sus subcarpetas y preparará archivos CSV con sus metadatos.</p>
+    </section>
+    <section class="panel picker-panel" aria-labelledby="picker-title">
+      <div class="panel-heading"><div><p class="step-label">PASO 1</p><h2 id="picker-title">Selecciona la carpeta</h2></div><span class="step-number">01</span></div>
+      <p class="muted">El análisis incluye archivos y subcarpetas. No abre ni modifica los documentos.</p>
+      <button id="choose-folder" class="button button-primary" type="button">Seleccionar carpeta</button>
+      <input id="folder-fallback" type="file" webkitdirectory directory multiple hidden>
+      <p id="selection-label" class="selection-label" aria-live="polite">Ninguna carpeta seleccionada.</p>
+    </section>
+    <section id="progress-panel" class="panel progress-panel" hidden aria-live="polite">
+      <div class="progress-heading"><h2 id="progress-title">Analizando carpeta…</h2><span id="progress-count" class="muted"></span></div>
+      <div class="progress-track"><div id="progress-bar" class="progress-bar"></div></div>
+      <p id="progress-message" class="muted">Leyendo únicamente metadatos.</p>
+    </section>
+    <section id="results" hidden>
+      <div class="section-heading"><div><p class="step-label">PASO 2</p><h2>Resultados del análisis</h2></div><button id="reset" class="button button-secondary" type="button">Analizar otra carpeta</button></div>
+      <div class="stats-grid">
+        <article class="stat-card"><span>Archivos</span><strong id="stat-files">0</strong></article>
+        <article class="stat-card"><span>Carpetas</span><strong id="stat-folders">0</strong></article>
+        <article class="stat-card"><span>Tamaño total</span><strong id="stat-size">0 MB</strong></article>
+        <article class="stat-card"><span>Errores de lectura</span><strong id="stat-errors">0</strong></article>
+      </div>
+      <div class="panel downloads-panel">
+        <div class="panel-heading"><div><p class="step-label">PASO 3</p><h2>Descarga los resultados</h2></div><span class="step-number">03</span></div>
+        <p class="muted">Los archivos se generan en tu navegador. Descarga los que necesites.</p>
+        <div class="download-list">
+          <button class="download-item" data-export="files" type="button"><span><strong>archivos.csv</strong><small>Un registro por archivo.</small></span><span class="download-arrow">↓</span></button>
+          <button class="download-item" data-export="folders" type="button"><span><strong>carpetas.csv</strong><small>Estructura y concentración documental.</small></span><span class="download-arrow">↓</span></button>
+          <button class="download-item" data-export="extensions" type="button"><span><strong>extensiones.csv</strong><small>Cantidad de archivos por extensión.</small></span><span class="download-arrow">↓</span></button>
+          <button class="download-item" data-export="years" type="button"><span><strong>modificaciones_por_anio.csv</strong><small>Archivos agrupados por año de modificación.</small></span><span class="download-arrow">↓</span></button>
+          <button class="download-item" data-export="summary" type="button"><span><strong>resumen.txt</strong><small>Totales y alcance del análisis.</small></span><span class="download-arrow">↓</span></button>
+        </div>
+      </div>
+    </section>
+    <section class="notice"><strong>Privacidad</strong><p>El procesamiento ocurre en este navegador. La herramienta no transmite, almacena ni inspecciona el contenido de tus documentos.</p></section>
+    <footer><span>Inventario documental · Herramienta de diagnóstico</span><a href="./README.md">Información técnica</a></footer>
+  </main>
+</body>
+</html>
