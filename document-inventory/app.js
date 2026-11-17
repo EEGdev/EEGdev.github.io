@@ -20,6 +20,7 @@
   let currentInventory = null;
   let dialogAction = null;
   let reportReady = false;
+  let reportDetails = null;
 
   function showDialog(title, message, confirmLabel, action) {
     dialogTitle.textContent = title;
@@ -77,6 +78,7 @@
   $("reset").addEventListener("click", () => {
     currentInventory = null;
     reportReady = false;
+    reportDetails = null;
     sendButton.disabled = true;
     resultsSection.hidden = true;
     progressPanel.hidden = true;
@@ -100,13 +102,15 @@
     reportMessage.textContent = "Preparando el archivo ZIP…";
     try {
       const date = localDateStamp(new Date());
-      const files = buildReportFiles(currentInventory, readParticipantDetails());
+      reportDetails = readParticipantDetails();
+      const files = buildReportFiles(currentInventory, reportDetails);
       const zip = createZip(files);
       const filename = "Reporte_documentos_LEES_" + date + ".zip";
       downloadBlob(filename, zip);
       reportReady = true;
       sendButton.disabled = false;
-      reportMessage.textContent = "ZIP generado y descargado. Ahora puedes enviarlo por correo.";
+      reportMessage.textContent = "ZIP generado y descargado. Continúa para preparar el correo.";
+      showDialog("3. Enviar por correo", "El ZIP ya está en las descargas de este equipo. Se abrirá un correo dirigido a emilioeeg@gmail.com. Adjunta el ZIP antes de enviarlo.", "Abrir correo", openEmailDraft);
     } catch (error) {
       reportMessage.textContent = "No se pudo generar el reporte. Intenta nuevamente o selecciona una carpeta más pequeña.";
     } finally {
@@ -126,7 +130,7 @@
 
   function openEmailDraft() {
     const date = localDateStamp(new Date());
-    const details = readParticipantDetails();
+    const details = reportDetails || readParticipantDetails();
     const body = [
       "Por favor, completa estos campos para referencia:",
       "",
@@ -141,7 +145,8 @@
       "Adjunta el archivo ZIP descargado."
     ].join("\n");
     const subject = "Reporte de documentos LEES - " + date;
-    const mailto = "mailto:?subject=" + encodeURIComponent(subject) + "&body=" + encodeURIComponent(body);
+    const recipient = "emilioeeg@gmail.com";
+    const mailto = "mailto:" + recipient + "?subject=" + encodeURIComponent(subject) + "&body=" + encodeURIComponent(body);
     const mailLink = document.createElement("a");
     mailLink.href = mailto;
     mailLink.style.display = "none";
@@ -222,6 +227,7 @@
     sendButton.disabled = true;
     reportMessage.textContent = "";
     resultsSection.hidden = false;
+    showDialog("2. Generar archivo ZIP", "La carpeta ya se analizó. El inventario contiene " + currentInventory.summary.archivos.toLocaleString("es-MX") + " archivos y " + currentInventory.summary.carpetas.toLocaleString("es-MX") + " carpetas. Genera el ZIP para continuar con el envío.", "Generar ZIP", generateZipReport);
   }
 
   function buildReportFiles(inventory, details) {
