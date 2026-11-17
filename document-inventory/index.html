@@ -5,7 +5,7 @@
   <meta name="viewport" content="width=device-width, initial-scale=1">
   <meta name="description" content="Genera un inventario local de archivos y carpetas mediante metadatos.">
   <meta name="theme-color" content="#172b4d">
-  <title>Inventario documental</title>
+  <title>Inventario documental | LEES Infraestructura</title>
   <link rel="stylesheet" href="./styles.css">
   <script defer src="./core/inventory-core.js"></script>
   <script defer src="./app.js"></script>
@@ -13,13 +13,19 @@
 <body>
   <main class="shell">
     <header class="topbar">
-      <div class="brand-mark" aria-hidden="true">ID</div>
-      <div><p class="eyebrow">HERRAMIENTA LOCAL</p><h1>Inventario documental</h1></div>
-      <span class="privacy-pill">Sin subir archivos</span>
+      <div class="brand">
+        <span class="brand-fallback" aria-hidden="true">LEES</span>
+        <img class="brand-logo" src="./assets/LEES-Logo_cuadrado_color.png" alt="LEES Infraestructura" onerror="this.hidden=true">
+      </div>
+      <div><p class="eyebrow">LEES INFRAESTRUCTURA</p><h1>Inventario documental</h1></div>
     </header>
+    <section class="notice" aria-label="Aviso de privacidad">
+      <strong>Privacidad</strong>
+      <p>El análisis ocurre en este navegador. La herramienta consulta nombres, rutas y metadatos; no abre, modifica ni transmite el contenido de tus documentos.</p>
+    </section>
     <section class="intro">
       <h2>Conoce la estructura de tu documentación</h2>
-      <p>Selecciona una carpeta. La herramienta recorrerá sus subcarpetas y preparará archivos CSV con sus metadatos.</p>
+      <p>Selecciona una carpeta. La herramienta recorrerá sus subcarpetas y preparará un reporte de sus metadatos.</p>
     </section>
     <section class="panel picker-panel" aria-labelledby="picker-title">
       <div class="panel-heading"><div><p class="step-label">PASO 1</p><h2 id="picker-title">Selecciona la carpeta</h2></div><span class="step-number">01</span></div>
@@ -42,18 +48,12 @@
         <article class="stat-card"><span>Errores de lectura</span><strong id="stat-errors">0</strong></article>
       </div>
       <div class="panel downloads-panel">
-        <div class="panel-heading"><div><p class="step-label">PASO 3</p><h2>Descarga los resultados</h2></div><span class="step-number">03</span></div>
-        <p class="muted">Los archivos se generan en tu navegador. Descarga los que necesites.</p>
-        <div class="download-list">
-          <button class="download-item" data-export="files" type="button"><span><strong>archivos.csv</strong><small>Un registro por archivo.</small></span><span class="download-arrow">↓</span></button>
-          <button class="download-item" data-export="folders" type="button"><span><strong>carpetas.csv</strong><small>Estructura y concentración documental.</small></span><span class="download-arrow">↓</span></button>
-          <button class="download-item" data-export="extensions" type="button"><span><strong>extensiones.csv</strong><small>Cantidad de archivos por extensión.</small></span><span class="download-arrow">↓</span></button>
-          <button class="download-item" data-export="years" type="button"><span><strong>modificaciones_por_anio.csv</strong><small>Archivos agrupados por año de modificación.</small></span><span class="download-arrow">↓</span></button>
-          <button class="download-item" data-export="summary" type="button"><span><strong>resumen.txt</strong><small>Totales y alcance del análisis.</small></span><span class="download-arrow">↓</span></button>
-        </div>
+        <div class="panel-heading"><div><p class="step-label">PASO 3</p><h2>Genera tu reporte</h2></div><span class="step-number">03</span></div>
+        <p class="muted">Se descargará un ZIP con todos los resultados y se abrirá un correo nuevo para enviarlo.</p>
+        <button id="generate-report" class="button button-primary report-button" type="button">Generar y descargar reporte</button>
+        <p id="report-message" class="selection-label" aria-live="polite"></p>
       </div>
     </section>
-    <section class="notice"><strong>Privacidad</strong><p>El procesamiento ocurre en este navegador. La herramienta no transmite, almacena ni inspecciona el contenido de tus documentos.</p></section>
     <footer><span>Inventario documental · Herramienta de diagnóstico</span><a href="./README.html">Información técnica</a></footer>
   </main>
 </body>
