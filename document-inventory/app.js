@@ -121,8 +121,8 @@
   sendButton.addEventListener("click", () => {
     if (!reportReady) return;
     showDialog(
-      "2. Enviar por correo",
-      "Se abrirá tu aplicación de correo con el asunto y los datos que proporcionaste. Adjunta el archivo ZIP que acabas de descargar.",
+      "3. Enviar por correo",
+      "Se abrirá un correo dirigido a emilioeeg@gmail.com. Adjunta el archivo ZIP que acabas de descargar.",
       "Abrir correo",
       openEmailDraft
     );
