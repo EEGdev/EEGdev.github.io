@@ -28,7 +28,18 @@
       <p>Selecciona una carpeta. La herramienta recorrerá sus subcarpetas y preparará un reporte de sus metadatos.</p>
     </section>
     <section class="panel picker-panel" aria-labelledby="picker-title">
-      <div class="panel-heading"><div><p class="step-label">PASO 1</p><h2 id="picker-title">Selecciona la carpeta</h2></div><span class="step-number">01</span></div>
+      <div class="panel-heading"><div><p class="step-label">PASO 1</p><h2 id="picker-title">Cuéntanos sobre la carpeta</h2></div><span class="step-number">01</span></div>
+      <p class="form-intro">Por favor completa esta información para identificar mejor la información.</p>
+      <div class="metadata-fields">
+        <label for="participant-name">Mi nombre</label>
+        <input id="participant-name" name="participant-name" type="text" autocomplete="name" placeholder="Escribe tu nombre">
+        <label for="folder-description">Qué información contiene la carpeta</label>
+        <textarea id="folder-description" name="folder-description" rows="3" placeholder="Describe brevemente el tipo de información"></textarea>
+        <label for="participant-comments">Comentario</label>
+        <textarea id="participant-comments" name="participant-comments" rows="2" placeholder="Información adicional (opcional)"></textarea>
+      </div>
+      <div class="picker-divider"></div>
+      <h3 class="picker-subtitle">Selecciona la carpeta que deseas analizar</h3>
       <p class="muted">El análisis incluye archivos y subcarpetas. No abre ni modifica los documentos.</p>
       <button id="choose-folder" class="button button-primary" type="button">Seleccionar carpeta</button>
       <input id="folder-fallback" type="file" webkitdirectory directory multiple hidden>
@@ -48,13 +59,34 @@
         <article class="stat-card"><span>Errores de lectura</span><strong id="stat-errors">0</strong></article>
       </div>
       <div class="panel downloads-panel">
-        <div class="panel-heading"><div><p class="step-label">PASO 3</p><h2>Genera tu reporte</h2></div><span class="step-number">03</span></div>
-        <p class="muted">Se descargará un ZIP con todos los resultados y se abrirá un correo nuevo para enviarlo.</p>
-        <button id="generate-report" class="button button-primary report-button" type="button">Generar y descargar reporte</button>
+        <div class="panel-heading"><div><p class="step-label">PASO 3</p><h2>Entrega tu reporte</h2></div><span class="step-number">03</span></div>
+        <p class="muted">Primero genera el archivo ZIP. Después podrás abrir un correo nuevo para enviarlo.</p>
+        <div class="report-actions">
+          <div class="report-action">
+            <div><strong>1. Generar archivo</strong><p>Descarga un ZIP con todos los resultados.</p></div>
+            <button id="generate-report" class="button button-primary" type="button">Generar archivo ZIP</button>
+          </div>
+          <div class="report-action">
+            <div><strong>2. Enviar por correo</strong><p>Abre un correo con tus datos de referencia.</p></div>
+            <button id="send-report" class="button button-secondary" type="button" disabled>Enviar por correo</button>
+          </div>
+        </div>
         <p id="report-message" class="selection-label" aria-live="polite"></p>
       </div>
     </section>
     <footer><span>Inventario documental · Herramienta de diagnóstico</span><a href="./README.html">Información técnica</a></footer>
   </main>
+
+  <dialog id="info-dialog" class="info-dialog" aria-labelledby="dialog-title">
+    <form method="dialog" class="dialog-content">
+      <p class="step-label">LEES INFRAESTRUCTURA</p>
+      <h2 id="dialog-title">Información</h2>
+      <p id="dialog-message"></p>
+      <div class="dialog-actions">
+        <button id="dialog-cancel" class="button button-secondary" value="cancel">Cancelar</button>
+        <button id="dialog-confirm" class="button button-primary" value="confirm">Continuar</button>
+      </div>
+    </form>
+  </dialog>
 </body>
 </html>
