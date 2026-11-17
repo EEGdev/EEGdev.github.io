@@ -41,7 +41,8 @@ function Export-CsvSafe {
 }
 
 try {
-    $Root = (Resolve-Path -LiteralPath $Root).Path.TrimEnd("\")
+    $Root = (Resolve-Path -LiteralPath $Root).Path
+    if ($Root.Length -gt 3) { $Root = $Root.TrimEnd("\") }
     $Desktop = [Environment]::GetFolderPath("Desktop")
     if ([string]::IsNullOrWhiteSpace($Desktop)) { $Desktop = $env:USERPROFILE }
     $Output = Join-Path $Desktop "Inventario_documental"
