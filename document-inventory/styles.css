@@ -1,14 +1,14 @@
 :root {
   color-scheme: light;
-  --ink: #14243a;
-  --muted: #46566b;
-  --line: #b9c5d3;
-  --surface: #fff;
-  --canvas: #e9eef4;
-  --accent: #124b91;
+  --ink: #0d1725;
+  --muted: #000;
+  --line: #000;
+  --surface: #b9d4fb;
+  --canvas: #ebf6fc;
+  --accent: #063c7d;
   --accent-dark: #0b3569;
   --soft-blue: #e2edfb;
-  --success: #135c43;
+  --success: #148760;
   font-family: "Segoe UI", Arial, sans-serif;
 }
 * { box-sizing: border-box; }
