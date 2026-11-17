@@ -13,13 +13,15 @@ Herramienta estática para generar un mapa de archivos y carpetas mediante metad
 
 ## Aplicación web
 
-Abre la página publicada y selecciona una carpeta. La aplicación recorre sus subcarpetas y permite descargar:
+Abre la página publicada y selecciona una carpeta. La aplicación recorre sus subcarpetas y genera un ZIP con:
 
 - **archivos.csv**: un registro por archivo.
 - **carpetas.csv**: estructura, profundidad, archivos directos y recursivos, y tamaño.
 - **extensiones.csv**: cantidad por extensión.
 - **modificaciones_por_anio.csv**: cantidad por año de modificación.
 - **resumen.txt**: totales y alcance del análisis.
+
+Al terminar, la aplicación descarga el ZIP y abre un correo nuevo con el asunto y los campos de referencia preparados. Por seguridad, el navegador no permite adjuntar archivos automáticamente mediante mailto. La persona debe adjuntar el ZIP descargado.
 
 La aplicación consulta nombres, rutas, tamaños y fechas de modificación. No lee el contenido de los archivos.
 
@@ -84,7 +86,7 @@ La fila de raíz aparece en carpetas.csv, pero no se cuenta como subcarpeta en e
 
 ## Arquitectura
 
-core/inventory-core.js contiene el modelo de inventario web y sus reglas de normalización. app.js conecta el navegador con el modelo y presenta las descargas.
+core/inventory-core.js contiene el modelo de inventario web y sus reglas de normalización. app.js conecta el navegador con el modelo y genera el ZIP.
 
 La CLI integra su motor PowerShell dentro de un único archivo BAT. No puede ejecutar el núcleo JavaScript sin instalar un runtime adicional. Por eso, ambas implementaciones comparten el contrato de datos y las reglas documentadas, no el mismo código ejecutable.
 
