@@ -109,8 +109,8 @@
       downloadBlob(filename, zip);
       reportReady = true;
       sendButton.disabled = false;
-      reportMessage.textContent = "ZIP generado y descargado. Continúa para preparar el correo.";
-      showDialog("3. Enviar por correo", "El ZIP ya está en las descargas de este equipo. Se abrirá un correo dirigido a emilioeeg@gmail.com. Adjunta el ZIP antes de enviarlo.", "Abrir correo", openEmailDraft);
+      reportMessage.textContent = "ZIP generado y descargado. Continúa para preparar y enviarlo por correo.";
+      showDialog("3. Enviar por correo", "El ZIP ya está en las descargas de este equipo. Se abrirá un correo dirigido a Emilio Espinosa (emilioeeg@gmail.com). NO OLVIDES ADJUNTAR EL ZIP ANTES DE ENVIAR EL CORREO.", "Abrir correo", openEmailDraft);
     } catch (error) {
       reportMessage.textContent = "No se pudo generar el reporte. Intenta nuevamente o selecciona una carpeta más pequeña.";
     } finally {
@@ -122,7 +122,7 @@
     if (!reportReady) return;
     showDialog(
       "3. Enviar por correo",
-      "Se abrirá un correo dirigido a emilioeeg@gmail.com. Adjunta el archivo ZIP que acabas de descargar.",
+      "Se abrirá un correo dirigido a Emilio Espinosa (emilioeeg@gmail.com). NO OLVIDES ADJUNTAR EL ZIP ANTES DE ENVIAR EL CORREO.",
       "Abrir correo",
       openEmailDraft
     );
