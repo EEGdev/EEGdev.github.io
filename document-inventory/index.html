@@ -21,26 +21,27 @@
     </header>
     <section class="notice" aria-label="Aviso de privacidad">
       <strong>Privacidad</strong>
-      <p>El análisis ocurre en este navegador. La herramienta consulta nombres, rutas y metadatos; no abre, modifica ni transmite el contenido de tus documentos.</p>
+      <p>CONFIDENCIAL. LA INFORMACIÓN ESTÁ PROTEGIDA POR EL ACUERDO DE CONFIDENCIALIDAD. El análisis ocurre localmente en este navegador. La herramienta sólo consulta nombres, rutas y metadatos; SÓLO LECTURA, no abre, modifica ni transmite el contenido de tus documentos.</p>
     </section>
     <section class="intro">
-      <h2>Conoce la estructura de tu documentación</h2>
-      <p>Selecciona una carpeta. La herramienta recorrerá sus subcarpetas y preparará un reporte de sus metadatos.</p>
+      <h2>Análisis de documentación por carpeta raiz</h2>
+      <p>Selecciona una de las carpeta donde se encuentre la mayoría de tus archivos de trabajo. La herramienta recorrerá sus subcarpetas y preparará un reporte con los nombres de archivos.</p>
     </section>
     <section class="panel picker-panel" aria-labelledby="picker-title">
       <div class="panel-heading"><div><p class="step-label">PASO 1</p><h2 id="picker-title">Cuéntanos sobre la carpeta</h2></div><span class="step-number">01</span></div>
-      <p class="form-intro">Por favor completa esta información para identificar mejor la información.</p>
+      <p class="form-intro">Por favor completa esta información para identificar mejor la documentación.</p>
       <div class="metadata-fields">
         <label for="participant-name">Mi nombre</label>
-        <input id="participant-name" name="participant-name" type="text" autocomplete="name" placeholder="Escribe tu nombre">
-        <label for="folder-description">Qué información contiene la carpeta</label>
+        <input id="participant-name" name="participant-name" type="text" autocomplete="name" placeholder="A quién pertenece esta carpeta">
+        <label for="folder-description">Qué información contiene la carpeta (reportes, documentos de trabajo, manuales, ...) ¿De qué área o función?</label>
         <textarea id="folder-description" name="folder-description" rows="3" placeholder="Describe brevemente el tipo de información"></textarea>
         <label for="participant-comments">Comentario</label>
         <textarea id="participant-comments" name="participant-comments" rows="2" placeholder="Información adicional (opcional)"></textarea>
       </div>
       <div class="picker-divider"></div>
       <h3 class="picker-subtitle">Selecciona la carpeta que deseas analizar</h3>
-      <p class="muted">El análisis incluye archivos y subcarpetas. No abre ni modifica los documentos.</p>
+      <p>Permite los permisos solicitados por el navegador.</p>
+      <p class="muted">en el pop-up, permite los permisos solicitados. El análisis no abre ni modifica los documentos.</p>
       <button id="choose-folder" class="button button-primary" type="button">Seleccionar carpeta</button>
       <input id="folder-fallback" type="file" webkitdirectory directory multiple hidden>
       <p id="selection-label" class="selection-label" aria-live="polite">Ninguna carpeta seleccionada.</p>
