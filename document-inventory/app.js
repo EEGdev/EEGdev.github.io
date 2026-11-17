@@ -10,6 +10,8 @@
   const progressBar = $("progress-bar");
   const progressMessage = $("progress-message");
   const resultsSection = $("results");
+  const reportButton = $("generate-report");
+  const reportMessage = $("report-message");
   let currentInventory = null;
 
   chooseButton.addEventListener("click", async () => {
@@ -42,25 +44,44 @@
     progressPanel.hidden = true;
     selectionLabel.textContent = "Ninguna carpeta seleccionada.";
     progressBar.style.width = "0%";
+    reportMessage.textContent = "";
   });
 
-  document.querySelectorAll("[data-export]").forEach((button) => {
-    button.addEventListener("click", () => {
-      if (!currentInventory) return;
-      const kind = button.dataset.export;
-      const exports = {
-        files: { name: "archivos.csv", rows: currentInventory.files, columns: ["rutaRelativa", "nombre", "extension", "tamanoBytes", "tamanoMB", "fechaCreacion", "ultimaModificacion", "anioModificacion"] },
-        folders: { name: "carpetas.csv", rows: currentInventory.folders, columns: ["rutaRelativa", "nombre", "nivel", "archivosDirectos", "archivosRecursivos", "tamanoTotalBytes"] },
-        extensions: { name: "extensiones.csv", rows: currentInventory.extensions, columns: ["extension", "cantidad"] },
-        years: { name: "modificaciones_por_anio.csv", rows: currentInventory.years, columns: ["anio", "cantidad"] }
-      };
-      if (kind === "summary") {
-        downloadText("resumen.txt", summaryText(currentInventory.summary), "text/plain;charset=utf-8");
-      } else if (exports[kind]) {
-        const item = exports[kind];
-        downloadText(item.name, toCsv(item.rows, item.columns), "text/csv;charset=utf-8");
-      }
-    });
+  reportButton.addEventListener("click", () => {
+    if (!currentInventory || reportButton.disabled) return;
+    reportButton.disabled = true;
+    reportMessage.textContent = "Preparando el archivo ZIP…";
+    try {
+      const date = localDateStamp(new Date());
+      const files = buildReportFiles(currentInventory);
+      const zip = createZip(files);
+      const filename = "Reporte_documentos_LEES_" + date + ".zip";
+      downloadBlob(filename, zip);
+      reportMessage.textContent = "ZIP descargado. Se abrirá un correo nuevo; adjunta el ZIP antes de enviarlo.";
+      const subject = "Reporte de documentos LEES - " + date;
+      const body = [
+        "Por favor, completa estos campos para referencia:",
+        "",
+        "Usuario:",
+        "",
+        "¿A qué corresponden estos archivos?",
+        "",
+        "Comentarios adicionales:",
+        "",
+        "Adjunta el archivo ZIP descargado."
+      ].join("\n");
+      const mailto = "mailto:?subject=" + encodeURIComponent(subject) + "&body=" + encodeURIComponent(body);
+      const mailLink = document.createElement("a");
+      mailLink.href = mailto;
+      mailLink.style.display = "none";
+      document.body.appendChild(mailLink);
+      mailLink.click();
+      mailLink.remove();
+    } catch (error) {
+      reportMessage.textContent = "No se pudo generar el reporte. Intenta nuevamente o selecciona una carpeta más pequeña.";
+    } finally {
+      reportButton.disabled = false;
+    }
   });
 
   async function scanDirectoryHandle(rootHandle) {
@@ -121,8 +142,19 @@
     progressBar.style.width = "100%";
     progressTitle.textContent = "Análisis completado";
     progressCount.textContent = currentInventory.summary.archivos.toLocaleString("es-MX") + " archivos";
-    progressMessage.textContent = "Los resultados están listos para descargar.";
+    progressMessage.textContent = "El reporte está listo para generar.";
     resultsSection.hidden = false;
+  }
+
+  function buildReportFiles(inventory) {
+    const csv = (rows, columns) => toCsv(rows, columns);
+    return [
+      { name: "archivos.csv", content: csv(inventory.files, ["rutaRelativa", "nombre", "extension", "tamanoBytes", "tamanoMB", "fechaCreacion", "ultimaModificacion", "anioModificacion"]) },
+      { name: "carpetas.csv", content: csv(inventory.folders, ["rutaRelativa", "nombre", "nivel", "archivosDirectos", "archivosRecursivos", "tamanoTotalBytes"]) },
+      { name: "extensiones.csv", content: csv(inventory.extensions, ["extension", "cantidad"]) },
+      { name: "modificaciones_por_anio.csv", content: csv(inventory.years, ["anio", "cantidad"]) },
+      { name: "resumen.txt", content: summaryText(inventory.summary) }
+    ];
   }
 
   function toCsv(rows, columns) {
@@ -137,7 +169,7 @@
 
   function summaryText(summary) {
     return [
-      "INVENTARIO DOCUMENTAL",
+      "INVENTARIO DOCUMENTAL LEES",
       "Fecha de análisis: " + summary.fechaAnalisis,
       "Carpeta analizada: " + summary.carpetaAnalizada,
       "Archivos: " + summary.archivos,
@@ -150,8 +182,92 @@
     ].join("\r\n");
   }
 
-  function downloadText(filename, text, mime) {
-    const blob = new Blob([text], { type: mime });
+  function createZip(files) {
+    const encoder = new TextEncoder();
+    const localParts = [];
+    const centralParts = [];
+    let offset = 0;
+    const stamp = dosDateTime(new Date());
+
+    for (const file of files) {
+      const name = encoder.encode(file.name);
+      const data = encoder.encode(file.content);
+      const crc = crc32(data);
+      const local = new Uint8Array(30 + name.length);
+      const lv = new DataView(local.buffer);
+      lv.setUint32(0, 0x04034b50, true);
+      lv.setUint16(4, 20, true);
+      lv.setUint16(6, 0x0800, true);
+      lv.setUint16(8, 0, true);
+      lv.setUint16(10, stamp.time, true);
+      lv.setUint16(12, stamp.date, true);
+      lv.setUint32(14, crc, true);
+      lv.setUint32(18, data.length, true);
+      lv.setUint32(22, data.length, true);
+      lv.setUint16(26, name.length, true);
+      lv.setUint16(28, 0, true);
+      local.set(name, 30);
+      localParts.push(local, data);
+
+      const central = new Uint8Array(46 + name.length);
+      const cv = new DataView(central.buffer);
+      cv.setUint32(0, 0x02014b50, true);
+      cv.setUint16(4, 20, true);
+      cv.setUint16(6, 20, true);
+      cv.setUint16(8, 0x0800, true);
+      cv.setUint16(10, 0, true);
+      cv.setUint16(12, stamp.time, true);
+      cv.setUint16(14, stamp.date, true);
+      cv.setUint32(16, crc, true);
+      cv.setUint32(20, data.length, true);
+      cv.setUint32(24, data.length, true);
+      cv.setUint16(28, name.length, true);
+      cv.setUint16(30, 0, true);
+      cv.setUint16(32, 0, true);
+      cv.setUint16(34, 0, true);
+      cv.setUint16(36, 0, true);
+      cv.setUint32(38, 0, true);
+      cv.setUint32(42, offset, true);
+      central.set(name, 46);
+      centralParts.push(central);
+      offset += local.length + data.length;
+    }
+
+    const centralSize = centralParts.reduce((sum, part) => sum + part.length, 0);
+    const end = new Uint8Array(22);
+    const ev = new DataView(end.buffer);
+    ev.setUint32(0, 0x06054b50, true);
+    ev.setUint16(4, 0, true);
+    ev.setUint16(6, 0, true);
+    ev.setUint16(8, files.length, true);
+    ev.setUint16(10, files.length, true);
+    ev.setUint32(12, centralSize, true);
+    ev.setUint32(16, offset, true);
+    ev.setUint16(20, 0, true);
+    return new Blob([...localParts, ...centralParts, end], { type: "application/zip" });
+  }
+
+  function crc32(bytes) {
+    let crc = 0xffffffff;
+    for (const byte of bytes) {
+      crc ^= byte;
+      for (let bit = 0; bit < 8; bit++) crc = (crc >>> 1) ^ ((crc & 1) ? 0xedb88320 : 0);
+    }
+    return (crc ^ 0xffffffff) >>> 0;
+  }
+
+  function dosDateTime(date) {
+    return {
+      time: (date.getHours() << 11) | (date.getMinutes() << 5) | Math.floor(date.getSeconds() / 2),
+      date: ((Math.max(1980, date.getFullYear()) - 1980) << 9) | ((date.getMonth() + 1) << 5) | date.getDate()
+    };
+  }
+
+  function localDateStamp(date) {
+    return [date.getFullYear(), String(date.getMonth() + 1).padStart(2, "0"), String(date.getDate()).padStart(2, "0")].join("-");
+  }
+
+  function downloadBlob(filename, blob) {
     const url = URL.createObjectURL(blob);
     const anchor = document.createElement("a");
     anchor.href = url;
@@ -159,7 +275,7 @@
     document.body.appendChild(anchor);
     anchor.click();
     anchor.remove();
-    setTimeout(() => URL.revokeObjectURL(url), 1000);
+    setTimeout(() => URL.revokeObjectURL(url), 1500);
   }
 
   function formatBytes(bytes) {
