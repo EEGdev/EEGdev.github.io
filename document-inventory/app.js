@@ -11,10 +11,46 @@
   const progressMessage = $("progress-message");
   const resultsSection = $("results");
   const reportButton = $("generate-report");
+  const sendButton = $("send-report");
   const reportMessage = $("report-message");
+  const infoDialog = $("info-dialog");
+  const dialogTitle = $("dialog-title");
+  const dialogMessage = $("dialog-message");
+  const dialogConfirm = $("dialog-confirm");
   let currentInventory = null;
+  let dialogAction = null;
+  let reportReady = false;
 
-  chooseButton.addEventListener("click", async () => {
+  function showDialog(title, message, confirmLabel, action) {
+    dialogTitle.textContent = title;
+    dialogMessage.textContent = message;
+    dialogConfirm.textContent = confirmLabel;
+    dialogAction = action;
+    infoDialog.showModal();
+  }
+
+  dialogConfirm.addEventListener("click", (event) => {
+    event.preventDefault();
+    const action = dialogAction;
+    dialogAction = null;
+    infoDialog.close();
+    if (action) action();
+  });
+
+  $("dialog-cancel").addEventListener("click", () => {
+    dialogAction = null;
+  });
+
+  chooseButton.addEventListener("click", () => {
+    showDialog(
+      "Acceso local a la carpeta",
+      "El análisis se hará en este equipo. Solo consultaremos nombres, rutas y metadatos; no abriremos, modificaremos ni enviaremos documentos. El navegador mostrará su propio permiso de acceso. Esta herramienta solicita lectura, no escritura.",
+      "Continuar",
+      openFolderPicker
+    );
+  });
+
+  async function openFolderPicker() {
     if ("showDirectoryPicker" in window) {
       try {
         const handle = await window.showDirectoryPicker({ mode: "read" });
@@ -25,7 +61,7 @@
       }
     }
     fallbackInput.click();
-  });
+  }
 
   fallbackInput.addEventListener("change", async () => {
     const selected = Array.from(fallbackInput.files || []);
@@ -40,6 +76,8 @@
 
   $("reset").addEventListener("click", () => {
     currentInventory = null;
+    reportReady = false;
+    sendButton.disabled = true;
     resultsSection.hidden = true;
     progressPanel.hidden = true;
     selectionLabel.textContent = "Ninguna carpeta seleccionada.";
@@ -49,40 +87,77 @@
 
   reportButton.addEventListener("click", () => {
     if (!currentInventory || reportButton.disabled) return;
+    showDialog(
+      "1. Generar archivo ZIP",
+      "Se preparará un ZIP con el inventario de archivos, carpetas, extensiones, fechas y resumen. El archivo se guardará en las descargas de este equipo.",
+      "Generar ZIP",
+      generateZipReport
+    );
+  });
+
+  function generateZipReport() {
     reportButton.disabled = true;
     reportMessage.textContent = "Preparando el archivo ZIP…";
     try {
       const date = localDateStamp(new Date());
-      const files = buildReportFiles(currentInventory);
+      const files = buildReportFiles(currentInventory, readParticipantDetails());
       const zip = createZip(files);
       const filename = "Reporte_documentos_LEES_" + date + ".zip";
       downloadBlob(filename, zip);
-      reportMessage.textContent = "ZIP descargado. Se abrirá un correo nuevo; adjunta el ZIP antes de enviarlo.";
-      const subject = "Reporte de documentos LEES - " + date;
-      const body = [
-        "Por favor, completa estos campos para referencia:",
-        "",
-        "Usuario:",
-        "",
-        "¿A qué corresponden estos archivos?",
-        "",
-        "Comentarios adicionales:",
-        "",
-        "Adjunta el archivo ZIP descargado."
-      ].join("\n");
-      const mailto = "mailto:?subject=" + encodeURIComponent(subject) + "&body=" + encodeURIComponent(body);
-      const mailLink = document.createElement("a");
-      mailLink.href = mailto;
-      mailLink.style.display = "none";
-      document.body.appendChild(mailLink);
-      mailLink.click();
-      mailLink.remove();
+      reportReady = true;
+      sendButton.disabled = false;
+      reportMessage.textContent = "ZIP generado y descargado. Ahora puedes enviarlo por correo.";
     } catch (error) {
       reportMessage.textContent = "No se pudo generar el reporte. Intenta nuevamente o selecciona una carpeta más pequeña.";
     } finally {
       reportButton.disabled = false;
     }
+  }
+
+  sendButton.addEventListener("click", () => {
+    if (!reportReady) return;
+    showDialog(
+      "2. Enviar por correo",
+      "Se abrirá tu aplicación de correo con el asunto y los datos que proporcionaste. Adjunta el archivo ZIP que acabas de descargar.",
+      "Abrir correo",
+      openEmailDraft
+    );
   });
+
+  function openEmailDraft() {
+    const date = localDateStamp(new Date());
+    const details = readParticipantDetails();
+    const body = [
+      "Por favor, completa estos campos para referencia:",
+      "",
+      "Usuario: " + (details.name || ""),
+      "",
+      "¿A qué corresponden estos archivos?",
+      details.description || "",
+      "",
+      "Comentarios adicionales:",
+      details.comments || "",
+      "",
+      "Adjunta el archivo ZIP descargado."
+    ].join("\n");
+    const subject = "Reporte de documentos LEES - " + date;
+    const mailto = "mailto:?subject=" + encodeURIComponent(subject) + "&body=" + encodeURIComponent(body);
+    const mailLink = document.createElement("a");
+    mailLink.href = mailto;
+    mailLink.style.display = "none";
+    document.body.appendChild(mailLink);
+    mailLink.click();
+    mailLink.remove();
+    reportMessage.textContent = "Correo preparado. Recuerda adjuntar el ZIP antes de enviarlo.";
+  }
+
+  function readParticipantDetails() {
+    return {
+      name: $("participant-name").value.trim(),
+      description: $("folder-description").value.trim(),
+      comments: $("participant-comments").value.trim()
+    };
+  }
 
   async function scanDirectoryHandle(rootHandle) {
     selectionLabel.textContent = "Carpeta seleccionada: " + rootHandle.name;
@@ -143,17 +218,20 @@
     progressTitle.textContent = "Análisis completado";
     progressCount.textContent = currentInventory.summary.archivos.toLocaleString("es-MX") + " archivos";
     progressMessage.textContent = "El reporte está listo para generar.";
+    reportReady = false;
+    sendButton.disabled = true;
+    reportMessage.textContent = "";
     resultsSection.hidden = false;
   }
 
-  function buildReportFiles(inventory) {
+  function buildReportFiles(inventory, details) {
     const csv = (rows, columns) => toCsv(rows, columns);
     return [
       { name: "archivos.csv", content: csv(inventory.files, ["rutaRelativa", "nombre", "extension", "tamanoBytes", "tamanoMB", "fechaCreacion", "ultimaModificacion", "anioModificacion"]) },
       { name: "carpetas.csv", content: csv(inventory.folders, ["rutaRelativa", "nombre", "nivel", "archivosDirectos", "archivosRecursivos", "tamanoTotalBytes"]) },
       { name: "extensiones.csv", content: csv(inventory.extensions, ["extension", "cantidad"]) },
       { name: "modificaciones_por_anio.csv", content: csv(inventory.years, ["anio", "cantidad"]) },
-      { name: "resumen.txt", content: summaryText(inventory.summary) }
+      { name: "resumen.txt", content: summaryText(inventory.summary, details) }
     ];
   }
 
@@ -167,7 +245,7 @@
     return "\uFEFF" + lines.join("\r\n");
   }
 
-  function summaryText(summary) {
+  function summaryText(summary, details) {
     return [
       "INVENTARIO DOCUMENTAL LEES",
       "Fecha de análisis: " + summary.fechaAnalisis,
@@ -178,7 +256,12 @@
       "Tamaño total (MB): " + summary.tamanoTotalMB,
       "Errores de lectura: " + summary.erroresLectura,
       "",
-      "El análisis consultó metadatos. No abrió ni transmitió documentos."
+      "DATOS DE REFERENCIA",
+      "Usuario: " + details.name,
+      "Qué información contiene la carpeta: " + details.description,
+      "Comentario: " + details.comments,
+      "",
+      "El análisis consultó metadatos localmente. No abrió ni transmitió documentos."
     ].join("\r\n");
   }
 
