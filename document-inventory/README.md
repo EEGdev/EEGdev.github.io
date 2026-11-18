@@ -18,7 +18,7 @@ Abre la página publicada y selecciona una carpeta. La aplicación recorre sus s
 - **archivos.csv**: un registro por archivo.
 - **carpetas.csv**: estructura, profundidad, archivos directos y recursivos, y tamaño.
 - **extensiones.csv**: cantidad por extensión.
-- **modificaciones_por_anio.csv**: cantidad por año de modificación.
+- **modificaciones_por_fecha.csv**: cantidad de archivos por mes y año de última modificación. Incluye los campos anio, mes, periodo y cantidad.
 - **resumen.txt**: totales y alcance del análisis.
 
 Al terminar, la aplicación descarga el ZIP y abre un correo nuevo con el asunto y los campos de referencia preparados. Por seguridad, el navegador no permite adjuntar archivos automáticamente mediante mailto. La persona debe adjuntar el ZIP descargado.
