@@ -123,10 +123,18 @@ try {
         ForEach-Object { [pscustomobject]@{ extension = $_.Name; cantidad = $_.Count } } |
         Sort-Object @{ Expression = "cantidad"; Descending = $true }, extension
     )
-    $YearRows = @(
-        $FileRows | Group-Object anioModificacion |
-        ForEach-Object { [pscustomobject]@{ anio = $_.Name; cantidad = $_.Count } } |
-        Sort-Object @{ Expression = "anio"; Descending = $true }
+    $MonthRows = @(
+        $FileRows | Group-Object { $_.ultimaModificacion.Substring(0,7) } |
+        ForEach-Object {
+            $Period = $_.Name
+            [pscustomobject]@{
+                anio = $Period.Substring(0,4)
+                mes = $Period.Substring(5,2)
+                periodo = $Period
+                cantidad = $_.Count
+            }
+        } |
+        Sort-Object @{ Expression = "periodo"; Descending = $true }
     )
 
     Export-CsvSafe $FileRows (Join-Path $Output "archivos.csv") @(
@@ -136,7 +144,7 @@ try {
         "rutaRelativa", "nombre", "nivel", "archivosDirectos", "archivosRecursivos", "tamanoTotalBytes"
     )
     Export-CsvSafe $ExtensionRows (Join-Path $Output "extensiones.csv") @("extension", "cantidad")
-    Export-CsvSafe $YearRows (Join-Path $Output "modificaciones_por_anio.csv") @("anio", "cantidad")
+    Export-CsvSafe $MonthRows (Join-Path $Output "modificaciones_por_fecha.csv") @("anio", "mes", "periodo", "cantidad")
 
     $TotalBytes = [int64](($Files | Measure-Object -Property Length -Sum).Sum)
     @(
