@@ -21,6 +21,8 @@ Abre la página publicada y selecciona una carpeta. La aplicación recorre sus s
 - **modificaciones_por_fecha.csv**: cantidad de archivos por mes y año de última modificación. Incluye los campos anio, mes, periodo y cantidad.
 - **resumen.txt**: totales y alcance del análisis.
 
+El ZIP usa el formato `Reportes Inventario Documental-[Usuario]-[yyMMddHHmm].zip`. El nombre del usuario se normaliza a caracteres ASCII seguros para Windows. Si no se proporciona, usa `Usuario_sin_nombre`.
+
 Al terminar, la aplicación descarga el ZIP y abre un correo nuevo con el asunto y los campos de referencia preparados. Por seguridad, el navegador no permite adjuntar archivos automáticamente mediante mailto. La persona debe adjuntar el ZIP descargado.
 
 La aplicación consulta nombres, rutas, tamaños y fechas de modificación. No lee el contenido de los archivos.
@@ -60,6 +62,15 @@ La CLI genera los mismos CSV. También incluye la fecha de creación del sistema
 | fechaCreacion | Fecha de creación; vacía en la web. |
 | ultimaModificacion | Fecha de última modificación, ISO 8601. |
 | anioModificacion | Año de última modificación. |
+
+### modificaciones_por_fecha.csv
+
+| Campo | Descripción |
+|---|---|
+| anio | Año de última modificación. |
+| mes | Mes de última modificación, de 01 a 12. |
+| periodo | Periodo agrupado en formato YYYY-MM. |
+| cantidad | Número de archivos modificados durante ese mes. |
 
 ### carpetas.csv
 
