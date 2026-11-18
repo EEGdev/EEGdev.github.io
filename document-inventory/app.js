@@ -101,11 +101,12 @@
     reportButton.disabled = true;
     reportMessage.textContent = "Preparando el archivo ZIP…";
     try {
-      const date = localDateStamp(new Date());
+      const now = new Date();
       reportDetails = readParticipantDetails();
       const files = buildReportFiles(currentInventory, reportDetails);
       const zip = createZip(files);
-      const filename = "Reporte_documentos_LEES_" + date + ".zip";
+      const safeUser = sanitizeFilenamePart(reportDetails.name) || "Usuario_sin_nombre";
+      const filename = "Reportes Inventario Documental-" + safeUser + "-" + localTimestamp(now) + ".zip";
       downloadBlob(filename, zip);
       reportReady = true;
       sendButton.disabled = false;
@@ -236,7 +237,7 @@
       { name: "archivos.csv", content: csv(inventory.files, ["rutaRelativa", "nombre", "extension", "tamanoBytes", "tamanoMB", "fechaCreacion", "ultimaModificacion", "anioModificacion"]) },
       { name: "carpetas.csv", content: csv(inventory.folders, ["rutaRelativa", "nombre", "nivel", "archivosDirectos", "archivosRecursivos", "tamanoTotalBytes"]) },
       { name: "extensiones.csv", content: csv(inventory.extensions, ["extension", "cantidad"]) },
-      { name: "modificaciones_por_anio.csv", content: csv(inventory.years, ["anio", "cantidad"]) },
+      { name: "modificaciones_por_fecha.csv", content: csv(inventory.modificationsByMonth, ["anio", "mes", "periodo", "cantidad"]) },
       { name: "resumen.txt", content: summaryText(inventory.summary, details) }
     ];
   }
@@ -354,6 +355,26 @@
 
   function localDateStamp(date) {
     return [date.getFullYear(), String(date.getMonth() + 1).padStart(2, "0"), String(date.getDate()).padStart(2, "0")].join("-");
+  }
+
+  function localTimestamp(date) {
+    const year = String(date.getFullYear()).slice(-2);
+    const month = String(date.getMonth() + 1).padStart(2, "0");
+    const day = String(date.getDate()).padStart(2, "0");
+    const hour = String(date.getHours()).padStart(2, "0");
+    const minute = String(date.getMinutes()).padStart(2, "0");
+    return year + month + day + hour + minute;
+  }
+
+  function sanitizeFilenamePart(value) {
+    return String(value || "")
+      .normalize("NFD")
+      .replace(/[\u0300-\u036f]/g, "")
+      .replace(/[<>:"/\\|?*\u0000-\u001F]/g, "_")
+      .replace(/[^A-Za-z0-9_-]+/g, "_")
+      .replace(/[_-]{2,}/g, "_")
+      .replace(/^[_-]+|[_-]+$/g, "")
+      .slice(0, 60);
   }
 
   function downloadBlob(filename, blob) {
