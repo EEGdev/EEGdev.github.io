@@ -1,6 +1,6 @@
 (function (global) {
   "use strict";
-  const SCHEMA_VERSION = "1.0";
+  const SCHEMA_VERSION = "1.1";
 
   function normalizeRelativePath(path, rootName) {
     const normalized = String(path || "").replace(/\\/g, "/").replace(/^\/+/, "");
@@ -83,12 +83,21 @@
     );
     const extensionMap = new Map();
     const yearMap = new Map();
+    const monthMap = new Map();
     let totalBytes = 0;
 
     for (const file of files) {
       extensionMap.set(file.extension, (extensionMap.get(file.extension) || 0) + 1);
       if (file.anioModificacion !== "") {
         yearMap.set(file.anioModificacion, (yearMap.get(file.anioModificacion) || 0) + 1);
+        const modifiedDate = new Date(file.ultimaModificacion);
+        const anio = modifiedDate.getFullYear();
+        const mes = String(modifiedDate.getMonth() + 1).padStart(2, "0");
+        const periodo = anio + "-" + mes;
+        if (!monthMap.has(periodo)) {
+          monthMap.set(periodo, { anio, mes, periodo, cantidad: 0 });
+        }
+        monthMap.get(periodo).cantidad += 1;
       }
       totalBytes += file.tamanoBytes;
     }
@@ -101,6 +110,8 @@
         .sort((a, b) => b.cantidad - a.cantidad || a.extension.localeCompare(b.extension)),
       years: Array.from(yearMap, ([anio, cantidad]) => ({ anio, cantidad }))
         .sort((a, b) => b.anio - a.anio),
+      modificationsByMonth: Array.from(monthMap.values())
+        .sort((a, b) => b.periodo.localeCompare(a.periodo)),
       summary: {
         carpetaAnalizada: rootName || "",
         archivos: files.length,
