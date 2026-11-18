@@ -30,5 +30,6 @@
 - [ ] Comparar archivos.csv web y CLI en la misma carpeta.
 - [ ] Comparar carpetas.csv y validar conteos directos y recursivos.
 - [ ] Comparar extensiones.csv.
-- [ ] Comparar modificaciones_por_anio.csv.
+- [ ] Comparar modificaciones_por_fecha.csv y validar agrupación por año y mes.
+- [ ] Confirmar que el ZIP usa el nombre del participante sin caracteres incompatibles y añade fecha/hora `yyMMddHHmm`.
 - [ ] Verificar diferencias documentadas de fecha de creación y carpetas vacías en el selector alternativo.
